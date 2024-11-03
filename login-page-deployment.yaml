@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: login-page-service
+spec:
+  selector:
+    app: login-page
+  ports:
+  - protocol: "TCP"
+    port: 8501 
+    targetPort: 8501
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: login-page
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: login-page
+  template:
+    metadata:
+      labels:
+        app: login-page
+    spec:
+      containers:
+      - name: login-page
+        image: login-page:latest
+        imagePullPolicy: Never
+        env:
+          - name: VAULT_ADDR
+            value: "http://vault-0.vault-internal.vault:8200"
+          - name: VAULT_TOKEN
+            value: "root"
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: "512Mi"
+          requests:
+            cpu: "250m"
+            memory: "50Mi"
+        ports:
+        - containerPort: 8501
